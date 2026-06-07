@@ -42,22 +42,32 @@ module.exports = async function handler(req, res) {
 
     const jsonContent = Buffer.from(JSON.stringify(intake, null, 2)).toString('base64');
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const payload = {
+      personalizations: [{ to: [{ email: 'justin@iamclovis.com' }] }],
+      from: { email: 'intake@naultsystems.com', name: 'Brain Intake' },
+      subject: `New Brain intake — ${coachName}`,
+      content: [{ type: 'text/html', value: html }],
+      attachments: [
+        {
+          content: jsonContent,
+          filename: `${slug}-intake.json`,
+          type: 'application/json',
+          disposition: 'attachment',
+        },
+      ],
+    };
+
+    if (intake.coach?.email) {
+      payload.reply_to = { email: intake.coach.email };
+    }
+
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'Brain Intake <intake@naultsystems.com>',
-        to: ['justin@iamclovis.com'],
-        reply_to: intake.coach?.email || undefined,
-        subject: `New Brain intake — ${coachName}`,
-        html,
-        attachments: [
-          { filename: `${slug}-intake.json`, content: jsonContent },
-        ],
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
