@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Agreement — The Brain · Nault Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1A1A1A;
+  --paper: #FFFFFF;
+  --accent: #4A9B8E;
+  --rule: #E0E0E0;
+  --muted: #666666;
+  --surface: #F5F5F5;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  height: 56px;
+}
+.topbar-brand { font-weight: 900; font-size: 16px; letter-spacing: -0.015em; }
+.topbar-brand .dot { color: var(--accent); }
+.topbar-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── MAIN ── */
+.main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 100px 48px 120px;
+}
+
+/* ── HEADER ── */
+.doc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.doc-label .accent { color: var(--accent); }
+.doc-title {
+  font-weight: 900; font-size: 40px; line-height: 1.0;
+  letter-spacing: -0.02em; margin-bottom: 12px;
+}
+.doc-title .dot { color: var(--accent); }
+.doc-sub {
+  font-size: 16px; color: var(--muted); line-height: 1.5;
+  margin-bottom: 48px;
+  padding-bottom: 48px; border-bottom: 1px solid var(--rule);
+}
+
+/* ── SECTIONS ── */
+.section {
+  margin-bottom: 56px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid var(--rule);
+}
+.section:last-of-type { border-bottom: 0; }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.section-title {
+  font-weight: 900; font-size: 22px; letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+
+/* ── BODY COPY ── */
+p { font-size: 15px; line-height: 1.7; margin-bottom: 16px; color: var(--ink); }
+p:last-child { margin-bottom: 0; }
+
+/* ── LISTS ── */
+ul, ol { padding-left: 20px; margin-bottom: 16px; }
+li { font-size: 15px; line-height: 1.7; margin-bottom: 8px; }
+li:last-child { margin-bottom: 0; }
+ul li { list-style: none; padding-left: 12px; position: relative; }
+ul li::before { content: '—'; position: absolute; left: -16px; color: var(--accent); }
+ol li { list-style: decimal; padding-left: 4px; }
+
+/* ── TABLE ── */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 20px 0; font-size: 14px;
+}
+th {
+  text-align: left; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+  padding: 10px 16px; border-bottom: 2px solid var(--rule);
+}
+td { padding: 14px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 700; white-space: nowrap; }
+
+/* ── CALLOUT ── */
+.callout {
+  border: 1px solid var(--accent); padding: 20px 24px;
+  margin: 24px 0; font-size: 14px; line-height: 1.6;
+}
+.callout p { margin-bottom: 8px; }
+.callout p:last-child { margin-bottom: 0; }
+.callout strong { font-weight: 700; }
+
+/* ── SIGNATURE BLOCK ── */
+.sig-block {
+  border: 1px solid var(--rule);
+  padding: 32px;
+  margin-top: 48px;
+}
+.sig-block h3 {
+  font-weight: 900; font-size: 18px; letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.sig-block p { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+.sig-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 32px; margin-bottom: 24px;
+}
+.sig-row:last-child { margin-bottom: 0; }
+.sig-field { display: flex; flex-direction: column; gap: 8px; }
+.sig-field label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.sig-line {
+  border-bottom: 1px solid var(--ink); height: 40px;
+  width: 100%;
+}
+
+/* ── BACK LINK ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+  margin-bottom: 48px;
+  transition: color 0.15s;
+}
+.back-link:hover { color: var(--accent); }
+
+@media (max-width: 700px) {
+  .topbar { padding: 0 24px; }
+  .main { padding: 88px 24px 80px; }
+  .sig-row { grid-template-columns: 1fr; gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">Nault Systems<span class="dot">.</span></div>
+  <div class="topbar-meta">The Brain · Project Agreement</div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <a href="index.html" class="back-link">← Back to intake form</a>
+
+  <div class="doc-label">Document — <span class="accent">Project Agreement</span></div>
+  <h1 class="doc-title">The Brain<span class="dot">.</span></h1>
+  <p class="doc-sub">Read this in full before signing. This document defines what you're buying, what I'm building, and what happens if anything goes sideways. If anything is unclear, reply to the email this came from before you sign.</p>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-label">01</div>
+    <h2 class="section-title">What you're getting</h2>
+    <p>I will build a <strong>Brain</strong> — a structured Obsidian knowledge vault — from your coaching archive. The Brain is built to the seven-element architecture: Distinctions, Evolution, Domains, Voice, Confidence, Conflict, and Corrections.</p>
+    <p>Specifically, I will:</p>
+    <ol>
+      <li>Process the archive you share with me — coaching call recordings, course modules, podcast appearances, written materials, and any other source content delivered via the shared folder we set up on your kickoff call.</li>
+      <li>Transcribe any audio or video files that don't already have transcripts.</li>
+      <li>Build structured knowledge pages for every major concept, protocol, and framework in your methodology.</li>
+      <li>Cross-link all seven structural elements throughout the vault.</li>
+      <li>Deliver the completed vault as an Obsidian folder you own outright.</li>
+    </ol>
+
+    <div class="callout">
+      <p><strong>What this engagement does not include:</strong></p>
+      <p>The AI bot, assistant, or product that runs on top of the Brain — that's a separate engagement, if you choose to continue. The Brain is the data foundation. The product built on it is its own project.</p>
+      <p>Also excluded: website or marketing materials, anything requiring content you don't provide, and legal review of your existing client consent agreements.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-label">02</div>
+    <h2 class="section-title">Deliverable</h2>
+    <p>A completed Obsidian vault containing:</p>
+    <ul>
+      <li><strong>Source pages</strong> — one structured page per coaching call, course module, or major recorded session in your archive, with title, date, domain tags, and key concepts extracted</li>
+      <li><strong>Concept pages</strong> — one page per distinct concept in your methodology, with the seven structural elements populated</li>
+      <li><strong>Domain indexes</strong> — navigable indexes for each domain area you teach</li>
+      <li><strong>Corrections registry</strong> — a dated log of every tracked position shift in your vault</li>
+      <li><strong>Voice blocks</strong> — verbatim language anchors throughout, sourced from recordings</li>
+    </ul>
+    <p>The vault is delivered as a folder you open in Obsidian on your own machine. No subscription. No platform dependency. Yours forever, portable to any AI product you ever build on top of it.</p>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-label">03</div>
+    <h2 class="section-title">Timeline</h2>
+    <p><strong>3–6 weeks from the date your files are accessible in the shared folder</strong> — not from the date you sign, and not from the date you pay.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Archive size</th>
+          <th>Estimated timeline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Under 100 hours of recordings</td><td>3 weeks</td></tr>
+        <tr><td>100–300 hours</td><td>4–5 weeks</td></tr>
+        <tr><td>300+ hours</td><td>5–6 weeks</td></tr>
+      </tbody>
+    </table>
+
+    <p>If your archive requires more processing time than estimated, I will tell you within the first two weeks and we will agree on a revised date in writing before continuing.</p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-label">04</div>
+    <h2 class="section-title">Your commitments</h2>
+    <p>The build cannot proceed without the following from you:</p>
+    <ul>
+      <li><strong>File delivery.</strong> Shared folder populated with organized files within 7 days of your kickoff call.</li>
+      <li><strong>Response time.</strong> You will respond to clarifying questions within the turnaround time you committed to in Section 8 of the intake form. If I ask a question and don't hear back within your committed timeframe, the timeline extends by the number of days I waited. I won't chase.</li>
+      <li><strong>Review pass.</strong> When I notify you that the vault is ready for review, you will complete it within 14 days. If 14 days passes without a response, the vault is considered accepted and delivered.</li>
+      <li><strong>Obsidian installed.</strong> You are responsible for having Obsidian installed before the delivery call. It is free at obsidian.md.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-label">05</div>
+    <h2 class="section-title">Payment</h2>
+    <p><strong>Total: $5,000 USD</strong></p>
+    <p><strong>Due: 100% upfront, before work begins.</strong> Work does not start — no kickoff call is scheduled, no shared folder is created — until payment is confirmed.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Refund</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cancel before kickoff call</td>
+          <td>Full refund, no questions</td>
+        </tr>
+        <tr>
+          <td>Cancel after kickoff call, before files are shared</td>
+          <td>50% refund ($2,500)</td>
+        </tr>
+        <tr>
+          <td>Cancel after files shared and work begun</td>
+          <td>No refund — time invested in your archive is not recoverable</td>
+        </tr>
+        <tr>
+          <td>I am unable to deliver for any reason on my end</td>
+          <td>Full refund regardless of stage</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <div class="section-label">06</div>
+    <h2 class="section-title">Revision scope</h2>
+    <p>After delivery, you have a <strong>14-day correction window</strong>. If you find a factual error — something the vault states that directly contradicts what you teach — I will correct it at no charge.</p>
+    <p>The correction window covers factual accuracy. It does not cover scope expansion.</p>
+    <ul>
+      <li><strong>Factual error (covered):</strong> "This page says I recommend X but I have never taught X."</li>
+      <li><strong>Scope expansion (not covered):</strong> "This page is missing a concept I didn't provide in my archive."</li>
+    </ul>
+    <p>After the 14-day correction window, any additional work is scoped and priced as a separate engagement.</p>
+    <p>The review pass — where you spot-check 15–20 representative pages and approve the vault before delivery — is the quality gate. Approval of the review pass is acceptance of the deliverable.</p>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section">
+    <div class="section-label">07</div>
+    <h2 class="section-title">Data handling</h2>
+    <p><strong>You own the Brain.</strong> The vault I deliver is built entirely from your content, your methodology, and your words. I claim no ownership over it. You may use it, modify it, sell products built on it, license it to others, or do anything else you want with it.</p>
+    <p><strong>What I keep:</strong> The process and methodology I use to build Brains. The seven-element architecture is my framework, not yours — but your content applied to it is entirely yours.</p>
+    <p><strong>Your source files:</strong> All source files you share with me are kept confidential, used only for building your Brain, and permanently deleted from my systems within 30 days of delivery.</p>
+    <p><strong>Client data:</strong> Any recordings containing client conversations will be processed with client names anonymized throughout the vault. Real client names never appear in finished vault pages, regardless of what appears in the source recordings.</p>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section">
+    <div class="section-label">08</div>
+    <h2 class="section-title">What "delivered" means</h2>
+    <p>Delivery is complete when:</p>
+    <ol>
+      <li>The vault has been transferred to you as a folder you can open in Obsidian, AND</li>
+      <li>You have completed or waived the review pass.</li>
+    </ol>
+    <p>After these two conditions are met, the engagement is complete. Any further work — additional processing, new content, product builds — is a separate engagement.</p>
+  </div>
+
+  <!-- SIGNATURE BLOCK -->
+  <div class="sig-block">
+    <h3>Agreement &amp; Signature</h3>
+    <p>By signing below, you confirm you have read this agreement in full, completed the intake form, and authorize payment of $5,000 to begin the engagement.</p>
+    <div class="sig-row">
+      <div class="sig-field">
+        <label>Client signature</label>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <label>Date</label>
+        <div class="sig-line"></div>
+      </div>
+    </div>
+    <div class="sig-row">
+      <div class="sig-field">
+        <label>Client name (print)</label>
+        <div class="sig-line"></div>
+      </div>
+      <div class="sig-field">
+        <label>Builder signature</label>
+        <div class="sig-line"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

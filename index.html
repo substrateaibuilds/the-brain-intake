@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brain — Client Intake · Nault Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1A1A1A;
+  --paper: #FFFFFF;
+  --accent: #4A9B8E;
+  --rule: #E0E0E0;
+  --muted: #666666;
+  --surface: #F5F5F5;
+  --destructive: #D97F7F;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+  min-height: 100vh;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ── TOP BAR ── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  height: 56px;
+}
+.topbar-brand { font-weight: 900; font-size: 16px; letter-spacing: -0.015em; }
+.topbar-brand .dot { color: var(--accent); }
+.topbar-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── PROGRESS ── */
+.progress-rail {
+  position: fixed; top: 56px; left: 0; right: 0; z-index: 99;
+  height: 3px; background: var(--rule);
+}
+.progress-fill {
+  height: 100%; background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+/* ── STEP BREADCRUMB ── */
+.step-nav {
+  position: fixed; top: 59px; left: 0; right: 0; z-index: 98;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  display: flex; gap: 0;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 0 48px;
+}
+.step-nav::-webkit-scrollbar { display: none; }
+.step-pill {
+  flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 10px 16px 10px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: default;
+  transition: color 0.2s;
+  gap: 8px;
+}
+.step-pill::after {
+  content: '→';
+  color: var(--rule);
+  font-size: 10px;
+  padding-left: 16px;
+}
+.step-pill:last-child::after { display: none; }
+.step-pill.active { color: var(--ink); }
+.step-pill.done { color: var(--accent); cursor: pointer; }
+.step-pill.done:hover { color: var(--ink); }
+.step-pill .pill-num { opacity: 0.5; }
+.step-pill.active .pill-num { color: var(--accent); opacity: 1; }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 144px 48px 120px;
+}
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+.step-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.step-label .accent { color: var(--accent); }
+.step-title {
+  font-weight: 900; font-size: 36px; line-height: 1.0;
+  letter-spacing: -0.02em; margin-bottom: 12px;
+}
+.step-title .dot { color: var(--accent); }
+.step-desc {
+  font-size: 16px; color: var(--muted); line-height: 1.5;
+  max-width: 620px; margin-bottom: 48px;
+  padding-bottom: 48px; border-bottom: 1px solid var(--rule);
+}
+
+/* ── ELEMENT CARDS (step 0) ── */
+.seven-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; border: 1px solid var(--rule);
+  margin: 32px 0;
+}
+.seven-item {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.seven-item:nth-child(even) { border-right: 0; }
+.seven-item:nth-last-child(-n+2) { border-bottom: 0; }
+.seven-item:last-child:nth-child(odd) { border-bottom: 0; grid-column: span 2; border-right: 0; }
+.seven-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 6px; }
+.seven-name { font-weight: 900; font-size: 18px; letter-spacing: -0.01em; }
+.seven-def { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+/* ── PREREQ LIST ── */
+.prereq-list { margin: 32px 0; }
+.prereq-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 0; border-bottom: 1px solid var(--rule);
+}
+.prereq-item:first-child { border-top: 1px solid var(--rule); }
+.prereq-check {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border: 1px solid var(--rule); margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.prereq-check.checked { background: var(--accent); border-color: var(--accent); }
+.prereq-check.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+.prereq-body h4 { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.prereq-body p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.prereq-body a { color: var(--accent); }
+
+/* ── QUESTIONS ── */
+.question { margin-bottom: 40px; }
+.q-group { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid var(--rule); }
+.q-group:last-child { border-bottom: 0; }
+.q-group-title {
+  font-weight: 900; font-size: 20px; letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.q-group-title .dot { color: var(--accent); }
+.q-group-desc { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+.q-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 6px;
+}
+.q-num { color: var(--accent); margin-right: 4px; }
+.q-text {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.005em;
+  margin-bottom: 8px; line-height: 1.4;
+}
+.q-hint { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+textarea, input[type="text"], select {
+  display: block; width: 100%;
+  font-family: 'Inter', system-ui, sans-serif; font-size: 15px;
+  color: var(--ink); background: var(--paper);
+  border: 1px solid var(--rule); padding: 12px 14px;
+  outline: none; resize: vertical; line-height: 1.55;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+textarea:focus, input[type="text"]:focus, select:focus { border-color: var(--accent); }
+textarea.error, input.error { border-color: var(--destructive); }
+textarea { min-height: 100px; }
+textarea.tall { min-height: 160px; }
+textarea.short { min-height: 68px; }
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='square'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+/* ── CHECKBOX GROUP ── */
+.check-group { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); }
+.check-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+}
+.check-item:last-child { border-bottom: 0; }
+.check-item:hover { background: var(--surface); }
+.check-box {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border: 1px solid var(--rule); margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check-item.checked .check-box { background: var(--accent); border-color: var(--accent); }
+.check-item.checked .check-box::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+.check-item-text { font-size: 14px; line-height: 1.5; }
+.check-item-text strong { display: block; font-weight: 700; }
+.check-item-text span { font-size: 13px; color: var(--muted); }
+
+/* ── RADIO GROUP ── */
+.radio-group { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); }
+.radio-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+}
+.radio-item:last-child { border-bottom: 0; }
+.radio-item:hover { background: var(--surface); }
+.radio-dot {
+  width: 16px; height: 16px; flex-shrink: 0; border-radius: 50%;
+  border: 1px solid var(--rule); margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; transition: border-color 0.15s;
+}
+.radio-item.selected .radio-dot { border-color: var(--accent); border-width: 5px; }
+.radio-item-text { font-size: 14px; line-height: 1.5; }
+.radio-item-text strong { font-weight: 700; }
+
+/* ── FLAG BANNER ── */
+.flag {
+  border: 1px solid var(--rule); padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 14px; line-height: 1.5;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.flag.warn { border-color: #D97F7F; }
+.flag.info { border-color: var(--accent); }
+.flag-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+.flag p { margin: 0; }
+.flag strong { display: block; font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+
+/* ── COMPLETION ── */
+.complete-header { text-align: left; margin-bottom: 48px; }
+.downloads { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); margin: 32px 0; }
+.download-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--rule);
+}
+.download-item:last-child { border-bottom: 0; }
+.download-meta h4 { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.download-meta p { font-size: 13px; color: var(--muted); }
+.btn-download {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 18px; border: 1px solid var(--ink); background: var(--ink);
+  color: white; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-download:hover { background: var(--accent); border-color: var(--accent); }
+
+.next-steps { margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--rule); }
+.next-steps h3 { font-weight: 900; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 24px; }
+.step-seq { display: flex; flex-direction: column; gap: 0; }
+.seq-item {
+  display: flex; gap: 20px; padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.seq-item:last-child { border-bottom: 0; }
+.seq-n {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--accent); letter-spacing: 0.08em; flex-shrink: 0; margin-top: 2px;
+}
+.seq-body h4 { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.seq-body p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.seq-body code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--surface); padding: 2px 5px; }
+
+/* ── NAVIGATION ── */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--paper); border-top: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 68px;
+}
+.nav-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+.nav-btns { display: flex; gap: 12px; }
+.btn-back {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 20px; border: 1px solid var(--rule);
+  background: none; color: var(--muted); cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-back:hover { border-color: var(--ink); color: var(--ink); }
+.btn-back:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+.btn-next {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 28px; border: 1px solid var(--ink);
+  background: var(--ink); color: white; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-next:hover { background: var(--accent); border-color: var(--accent); }
+.btn-next.final { background: var(--accent); border-color: var(--accent); }
+.btn-next.final:hover { background: var(--ink); border-color: var(--ink); }
+
+/* ── ERROR ── */
+.err-msg { font-size: 13px; color: var(--destructive); margin-top: 6px; display: none; }
+.err-msg.show { display: block; }
+
+@media (max-width: 700px) {
+  .main { padding: 144px 24px 100px; }
+  .topbar { padding: 0 24px; }
+  .step-nav { padding: 0 24px; }
+  .nav-bar { padding: 0 24px; }
+  .seven-grid { grid-template-columns: 1fr; }
+  .seven-item:nth-child(even) { border-right: 1px solid var(--rule); }
+  .seven-item:last-child:nth-child(odd) { grid-column: span 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">Nault Systems<span class="dot">.</span></div>
+  <div class="topbar-meta">The Brain · Client Intake</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-rail"><div class="progress-fill" id="progress-fill"></div></div>
+
+<!-- STEP NAV -->
+<nav class="step-nav" id="step-nav"></nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ─── STEP 0: WELCOME ─────────────────────────────── -->
+<div class="step-panel active" id="step-0">
+  <div class="step-label">Step <span class="accent">01</span> of 10 — Introduction</div>
+  <h1 class="step-title">Your Brain starts here<span class="dot">.</span></h1>
+  <p class="step-desc">This intake captures the architecture of your methodology — not just the content. It takes 60–90 minutes. Complete it in one sitting or save progress and return. Your answers auto-save in this browser.</p>
+
+  <div class="seven-grid">
+    <div class="seven-item"><div class="seven-num">01</div><div class="seven-name">Distinctions</div><div class="seven-def">Concepts you refuse to merge.</div></div>
+    <div class="seven-item"><div class="seven-num">02</div><div class="seven-name">Evolution</div><div class="seven-def">Position changes tracked over time.</div></div>
+    <div class="seven-item"><div class="seven-num">03</div><div class="seven-name">Domains</div><div class="seven-def">Cross-links between every area you teach.</div></div>
+    <div class="seven-item"><div class="seven-num">04</div><div class="seven-name">Voice</div><div class="seven-def">Verbatim language, anchored to source.</div></div>
+    <div class="seven-item"><div class="seven-num">05</div><div class="seven-name">Confidence</div><div class="seven-def">How certain you are, page by page.</div></div>
+    <div class="seven-item"><div class="seven-num">06</div><div class="seven-name">Conflict</div><div class="seven-def">Where you diverge from mainstream, explicit.</div></div>
+    <div class="seven-item"><div class="seven-num">07</div><div class="seven-name">Corrections</div><div class="seven-def">A dated registry of what you've changed your mind on.</div></div>
+  </div>
+
+  <h3 style="font-size:16px; font-weight:700; margin-bottom: 16px;">Before you start, confirm these two things:</h3>
+  <div class="prereq-list">
+    <div class="prereq-item" id="pr-1" onclick="togglePrereq('pr-1')">
+      <div class="prereq-check" id="pc-1"></div>
+      <div class="prereq-body">
+        <h4>Obsidian is installed on your computer</h4>
+        <p>Your Brain is delivered as an Obsidian vault. Install it free at <a href="https://obsidian.md" target="_blank">obsidian.md</a> before delivery day — not after.</p>
+      </div>
+    </div>
+    <div class="prereq-item" id="pr-2" onclick="togglePrereq('pr-2')">
+      <div class="prereq-check" id="pc-2"></div>
+      <div class="prereq-body">
+        <h4>I have received and read the project agreement</h4>
+        <p>Payment terms, revision scope, data handling, and deliverable definition are in the <a href="project-agreement.html" target="_blank">project agreement</a>. If you haven't received it, stop here and reply to that email.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 1: WHO YOU ARE ─────────────────────────────── -->
+<div class="step-panel" id="step-1">
+  <div class="step-label">Step <span class="accent">02</span> of 10 — Identity</div>
+  <h1 class="step-title">Who you are<span class="dot">.</span></h1>
+  <p class="step-desc">Basics first. These answers shape how the vault is titled, what domains get scaffolded, and what downstream product architecture I prioritize.</p>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q1</span> Name &amp; Brand</span>
+    <div class="q-text">Your full name and coaching brand name (if different).</div>
+    <input type="text" id="q1" placeholder="e.g. Sarah Johnson · Aligned Performance" oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q2</span> Niche</span>
+    <div class="q-text">Your niche in one sentence. Who do you coach and on what specific outcome?</div>
+    <input type="text" id="q2" placeholder="e.g. I coach high-performing women through hormonal burnout recovery back to sustainable energy." oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q3</span> Experience</span>
+    <div class="q-text">How long have you been coaching professionally, and roughly how many clients total?</div>
+    <input type="text" id="q3" placeholder="e.g. 7 years · ~200 private clients" oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q4</span> Delivery format</span>
+    <div class="q-text">What's your primary delivery format?</div>
+    <select id="q4" onchange="save()">
+      <option value="">Select one</option>
+      <option>1:1 private coaching only</option>
+      <option>Group program only</option>
+      <option>Community + coaching</option>
+      <option>Hybrid 1:1 and group</option>
+      <option>Course only (no live coaching)</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q5</span> Tech stack</span>
+    <div class="q-text">What platforms host your content and calls? For each, note what lives there.</div>
+    <div class="q-hint">This matters — some platforms lock content in ways that affect access. Be specific.</div>
+    <textarea id="q5" class="short" placeholder="e.g. Kajabi (courses + recordings), Zoom (1:1 calls), Google Drive (documents), Skool (community)" oninput="save()"></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q6</span> Downstream vision</span>
+    <div class="q-text">What product do you most want to build once your Brain exists?</div>
+    <div class="q-hint">Be specific. "A client intake bot that qualifies before discovery calls" is more useful than "an AI."</div>
+    <textarea id="q6" oninput="save()" placeholder="e.g. A 24/7 AI that handles the first 3 weeks of my group program — nutrition tracking check-ins, accountability, and answering protocol questions — so I only show up for the high-touch moments."></textarea>
+  </div>
+</div>
+
+<!-- ─── STEP 2: ARCHIVE ─────────────────────────────── -->
+<div class="step-panel" id="step-2">
+  <div class="step-label">Step <span class="accent">03</span> of 10 — Archive</div>
+  <h1 class="step-title">What you have<span class="dot">.</span></h1>
+  <p class="step-desc">Go count your files before answering. Pull up Google Drive, Zoom, Dropbox, and your hard drive. Rough numbers are fine — just get them now, not later.</p>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q7</span> Archive inventory</span>
+    <div class="q-text">Walk me through what you have. Fill in every type that applies.</div>
+    <textarea id="q7" class="tall" oninput="save()" placeholder="Coaching call recordings: ~180 calls, 2021–2026, Zoom cloud + Google Drive&#10;Course modules: 4 programs, ~60 video lessons, Kajabi&#10;Podcast: 40 episodes (guest appearances on other shows), MP3 files on Google Drive&#10;Masterclasses/webinars: 12 recordings on Zoom&#10;Written docs: 3 PDFs, 1 email sequence, monthly newsletter archive (2022–2026)&#10;Social: long-form captions in a Notion doc"></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q8</span> Organization state</span>
+    <div class="q-text">What is the state of your archive organization?</div>
+    <div class="radio-group" id="q8-radio">
+      <div class="radio-item" onclick="selectRadio('q8','A')"><div class="radio-dot"></div><div class="radio-item-text"><strong>A — Well-organized.</strong> Files are named descriptively and sorted into folders by date or topic.</div></div>
+      <div class="radio-item" onclick="selectRadio('q8','B')"><div class="radio-dot"></div><div class="radio-item-text"><strong>B — Partially organized.</strong> Some folders exist but naming is inconsistent.</div></div>
+      <div class="radio-item" onclick="selectRadio('q8','C')"><div class="radio-dot"></div><div class="radio-item-text"><strong>C — Dumped.</strong> Most files are in one big folder with default platform names (Zoom_Recording.mp4).</div></div>
+      <div class="radio-item" onclick="selectRadio('q8','D')"><div class="radio-dot"></div><div class="radio-item-text"><strong>D — Scattered.</strong> Content is spread across 3+ platforms with no central organization.</div></div>
+    </div>
+    <input type="hidden" id="q8">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q9</span> Format &amp; transcripts</span>
+    <div class="q-text">What format are your recordings, and do you have existing transcripts?</div>
+    <div class="check-group">
+      <div class="check-item" onclick="toggleCheck(this,'q9-vid')"><div class="check-box"></div><div class="check-item-text"><strong>Video files</strong> <span>.mp4, .mov, .mkv, .webm</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this,'q9-aud')"><div class="check-box"></div><div class="check-item-text"><strong>Audio-only files</strong> <span>.mp3, .m4a, .wav</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this,'q9-trx')"><div class="check-box"></div><div class="check-item-text"><strong>Transcripts already generated</strong> <span>.txt, .docx, .vtt, .srt</span></div></div>
+      <div class="check-item" onclick="toggleCheck(this,'q9-plat')"><div class="check-box"></div><div class="check-item-text"><strong>Transcripts in a platform</strong> <span>Otter.ai, Descript, Fathom, Zoom auto-transcripts — note service below</span></div></div>
+    </div>
+    <input type="text" id="q9-trx-service" placeholder="If transcripts: which service generated them? (Otter.ai, Zoom, Descript, Rev, etc.)" style="margin-top:8px;" oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q10</span> Session length</span>
+    <div class="q-text">What is the average length of your coaching sessions?</div>
+    <div class="q-hint">Needed to scope transcription time accurately. This affects build timeline.</div>
+    <input type="text" id="q10" placeholder="e.g. 1:1 calls = 60 min, group calls = 90 min, course lessons = 10–25 min each" oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q11</span> Authorship</span>
+    <div class="q-text">What percentage of the content did YOU personally teach or record? Is any co-created with a partner or team?</div>
+    <textarea id="q11" class="short" oninput="save()" placeholder="e.g. ~90% is me. I have 8 guest expert calls from 2023 I'd want to exclude. One program was co-taught with another coach in 2022."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q12</span> Old-era content</span>
+    <div class="q-text">Is there content from a period you've publicly moved away from? An old era, prior brand, or methodology you've since pivoted from?</div>
+    <div class="q-hint">If yes: describe it and the approximate date range. It will be processed differently — flagged as historical rather than current teaching.</div>
+    <textarea id="q12" class="short" oninput="save()" placeholder="e.g. Yes — I was a strict calorie-counting coach 2018–2020. That content contradicts my current nourishment-first approach. I have about 40 videos from that era."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q13</span> Crown jewel</span>
+    <div class="q-text">What is the single richest, most complete piece of content you've ever created?</div>
+    <textarea id="q13" class="short" oninput="save()" placeholder="e.g. My 2024 Burnout Recovery Masterclass — 3 hours, covers the full nervous system + hormone + nutrition framework, with a live Q&amp;A. It's the most complete snapshot of my methodology."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q14</span> Exclusions</span>
+    <div class="q-text">Is there anything you explicitly do NOT want included in the Brain?</div>
+    <div class="q-hint">Think: client calls without consent, old-era content, co-created IP, anything you'd be uncomfortable having in an AI's knowledge base.</div>
+    <textarea id="q14" class="short" oninput="save()" placeholder="e.g. Any calls from before Jan 2022 (no release agreements). My 2019 weight-loss challenge content — I've publicly reversed on that approach. The 6-week program I co-created with [name] in 2021."></textarea>
+  </div>
+</div>
+
+<!-- ─── STEP 3: LEGAL ─────────────────────────────── -->
+<div class="step-panel" id="step-3">
+  <div class="step-label">Step <span class="accent">04</span> of 10 — Legal &amp; Consent</div>
+  <h1 class="step-title">Legal &amp; consent<span class="dot">.</span></h1>
+  <p class="step-desc">Non-negotiable. This section determines what can and can't be processed. There's no wrong answer — only surprises I need to know about before I start.</p>
+
+  <div class="flag info"><div class="flag-icon">ℹ</div><div><p><strong>This doesn't kill the project.</strong> Many coaches have partial or no releases. We scope around it together on the kickoff call. Answer honestly — surprises after the build starts are the problem, not the facts themselves.</p></div></div>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q15</span> Client call consent</span>
+    <div class="q-text">For coaching call recordings that include clients: do you have signed releases or program agreements covering recording and use?</div>
+    <div class="radio-group" id="q15-radio">
+      <div class="radio-item" onclick="selectRadio('q15','all')"><div class="radio-dot"></div><div class="radio-item-text"><strong>Yes — all clients</strong> signed a program agreement or recording consent that covers this.</div></div>
+      <div class="radio-item" onclick="selectRadio('q15','some')"><div class="radio-dot"></div><div class="radio-item-text"><strong>Yes for some, not all.</strong> I can identify which calls are covered.</div></div>
+      <div class="radio-item" onclick="selectRadio('q15','no')"><div class="radio-dot"></div><div class="radio-item-text"><strong>No.</strong> I don't have specific releases for recorded calls.</div></div>
+      <div class="radio-item" onclick="selectRadio('q15','na')"><div class="radio-dot"></div><div class="radio-item-text"><strong>Not applicable.</strong> No client calls in my archive — only courses, trainings, or solo content.</div></div>
+    </div>
+    <input type="hidden" id="q15">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q16</span> International clients (GDPR / privacy law)</span>
+    <div class="q-text">Do any of your recordings include clients from the EU, UK, Canada, or California?</div>
+    <div class="q-hint">GDPR and similar laws apply to residents of those jurisdictions regardless of where you're based.</div>
+    <div class="radio-group" id="q16-radio">
+      <div class="radio-item" onclick="selectRadio('q16','yes')"><div class="radio-dot"></div><div class="radio-item-text"><strong>Yes</strong> — I have clients from EU, UK, Canada, or California.</div></div>
+      <div class="radio-item" onclick="selectRadio('q16','no')"><div class="radio-dot"></div><div class="radio-item-text"><strong>No</strong> — my clients are primarily US-based (outside California).</div></div>
+      <div class="radio-item" onclick="selectRadio('q16','unknown')"><div class="radio-dot"></div><div class="radio-item-text"><strong>I don't know.</strong></div></div>
+    </div>
+    <input type="hidden" id="q16">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q17</span> Co-created content</span>
+    <div class="q-text">Did you create all of this content independently, or is any of it co-created with a business partner, co-host, or another coach?</div>
+    <div class="q-hint">If co-created: who, what content, and do you have rights to include it without their consent?</div>
+    <textarea id="q17" class="short" oninput="save()" placeholder="e.g. Everything is solo except my 2022 Aligned Business program, which I co-taught with [name]. We never discussed IP rights for third-party use."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q18</span> NDAs &amp; third-party IP</span>
+    <div class="q-text">Are you bound by any NDAs, certification program IP clauses, or licensing agreements that might restrict commercializing content from your archive?</div>
+    <div class="q-hint">Common: IIN, Life Coach School, FMCA, or employer/partner NDAs. Many certification programs have IP clauses coaches don't notice.</div>
+    <textarea id="q18" class="short" oninput="save()" placeholder="e.g. I was trained through IIN in 2017 but I'm not using their curriculum — my content is all original. No other NDAs."></textarea>
+  </div>
+</div>
+
+<!-- ─── STEP 4: DISTINCTIONS + EVOLUTION ─────────────────────────────── -->
+<div class="step-panel" id="step-4">
+  <div class="step-label">Step <span class="accent">05</span> of 10 — Elements 1 &amp; 2</div>
+  <h1 class="step-title">Distinctions &amp; Evolution<span class="dot">.</span></h1>
+  <p class="step-desc">Two of the seven structural elements. Your answers here determine which concept pairs get their own pages and how your position history gets timestamped.</p>
+
+  <div class="q-group">
+    <div class="q-group-title">01 — Distinctions<span class="dot">.</span></div>
+    <div class="q-group-desc">Every concept in your Brain gets its own page. First I need to know which distinctions matter to you — the conflations that drive you crazy when other coaches make them.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q19</span> Distinction pairs</span>
+      <div class="q-text">What are the concepts most coaches conflate that you treat as completely separate?</div>
+      <div class="q-hint">Format: "[Concept A] is NOT the same as [Concept B]. They require different protocols because ___." List 5–10 pairs.</div>
+      <textarea id="q19" class="tall" oninput="save()" placeholder="e.g.&#10;Metabolic adaptation is NOT the same as metabolic damage. Adaptation is reversible; damage isn't. Wrong protocol for wrong condition delays recovery by months.&#10;&#10;Emotional eating is NOT the same as binge eating. Emotional eating is identity-driven; binge eating has a physiological loop. Treating them the same produces no results.&#10;&#10;Weight loss is NOT the same as fat loss. A client losing scale weight while gaining fat is getting worse, not better."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q20</span> The non-obvious distinction</span>
+      <div class="q-text">What's the distinction in your methodology that surprises clients most when you first make it? The "wait — those are different things?" moment.</div>
+      <textarea id="q20" class="short" oninput="save()" placeholder="e.g. That hunger and appetite are completely different systems. Hunger is cellular — your body asking for fuel. Appetite is psychological — your brain asking for comfort or stimulation. Same feeling in the body, completely different protocol."></textarea>
+    </div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-group-title">02 — Evolution<span class="dot">.</span></div>
+    <div class="q-group-desc">Your Brain holds every era of your work, timestamped. This prevents the AI from confidently quoting an older position to a current client.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q21</span> What you've stopped teaching</span>
+      <div class="q-text">What did you teach 3–5 years ago that you no longer endorse? Be specific: the teaching, what replaced it, and approximately when it changed.</div>
+      <textarea id="q21" class="tall" oninput="save()" placeholder="e.g. I used to recommend 16:8 intermittent fasting for everyone as a foundational tool — roughly 2018–2021. I stopped recommending it broadly in 2022 when I saw it consistently suppressing thyroid function in my female clients. I now treat IF as a tool for the metabolically healthy only, and actively steer clients in metabolic recovery away from it."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q22</span> Biggest reversal</span>
+      <div class="q-text">What's the single biggest position reversal in your career — and when did it happen?</div>
+      <textarea id="q22" class="short" oninput="save()" placeholder="e.g. My carnivore period. I went strict carnivore for 18 months (2019–2020), publicly recommended it, then saw my own labs collapse. Fully reversed by early 2021. About 90% of my clients now come to me recovering from low-carb protocols."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q23</span> Before/after eras</span>
+      <div class="q-text">Is there a "before era" and "after era" in your methodology — a point where the whole approach shifted?</div>
+      <textarea id="q23" class="short" oninput="save()" placeholder="e.g. Yes — pre-2021 I was a restriction-and-discipline coach. My framework was calorie-based, willpower-based. Post-2021 I rebuilt everything around nourishment, metabolic repair, and identity work. The two eras are fundamentally incompatible."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 5: DOMAINS + VOICE ─────────────────────────────── -->
+<div class="step-panel" id="step-5">
+  <div class="step-label">Step <span class="accent">06</span> of 10 — Elements 3 &amp; 4</div>
+  <h1 class="step-title">Domains &amp; Voice<span class="dot">.</span></h1>
+  <p class="step-desc">How your teaching areas interconnect, and the specific language that makes you sound like you rather than a generic AI.</p>
+
+  <div class="q-group">
+    <div class="q-group-title">03 — Domains<span class="dot">.</span></div>
+    <div class="q-group-desc">The vault cross-links your domains so the AI doesn't silo metabolic answers from identity answers. These become the index files and navigation structure.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q24</span> All your domains</span>
+      <div class="q-text">List every subject area you teach. Don't filter for overlap.</div>
+      <div class="q-hint">Examples: nutrition, metabolic health, fitness, identity, psychology, nervous system, hormones, relationships, masculinity, business, sales, content, leadership, spirituality, parenting.</div>
+      <textarea id="q24" class="short" oninput="save()" placeholder="e.g. Metabolic health, nutrition, nervous system regulation, identity/psychology, relationships, business strategy, content creation"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q25</span> Domain percentages</span>
+      <div class="q-text">Roughly what percentage of your content falls in each domain?</div>
+      <textarea id="q25" class="short" oninput="save()" placeholder="e.g. 55% metabolic health + nutrition, 25% identity/psychology, 15% nervous system, 5% business/content"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q26</span> Cross-domain connection</span>
+      <div class="q-text">Pick any two of your domains and give a concrete example of how they connect in your work.</div>
+      <div class="q-hint">The more surprising the connection, the better — these become key cross-domain callouts throughout the vault.</div>
+      <textarea id="q26" class="short" oninput="save()" placeholder="e.g. Emotional eating [nutrition] is really an identity pattern [psychology] — the body is self-soothing because the self doesn't feel safe. Treating it as a food problem produces zero durable results."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q27</span> The missed connection</span>
+      <div class="q-text">Which domain connection do most coaches in your niche miss or deliberately ignore?</div>
+      <textarea id="q27" class="short" oninput="save()" placeholder="e.g. The business-to-metabolic link. Most coaches treat financial stress as a mindset problem. I treat it as a cortisol problem with a direct metabolic downstream — elevated cortisol suppresses thyroid, thyroid drives metabolism."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q28</span> Private domains</span>
+      <div class="q-text">Are there any domains you teach privately that you don't want included in a client-facing AI?</div>
+      <textarea id="q28" class="short" oninput="save()" placeholder="e.g. I coach on business strategy in my high-ticket private tier but wouldn't want that in a client health bot. Keep to metabolic + identity domains only for the AI."></textarea>
+    </div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-group-title">04 — Voice<span class="dot">.</span></div>
+    <div class="q-group-desc">The vault stores your exact language anchored to its source moment. This is what makes the bot sound like you — not a tone prompt, but actual phrasing retrieved at speech time.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q29</span> Your phrases</span>
+      <div class="q-text">What are 5–10 phrases that only you would say? The stuff clients quote back to you. Write them raw, exactly as you'd say them.</div>
+      <textarea id="q29" class="tall" oninput="save()" placeholder="e.g.&#10;&quot;Eat food, not poison.&quot;&#10;&quot;Your body is not broken — it's protecting you.&quot;&#10;&quot;Calories in, calories out should be called fuel in, energy out.&quot;&#10;&quot;You don't have a willpower problem. You have a biology problem.&quot;&#10;&quot;The diet industry sold you a symptom fix and called it a solution.&quot;"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q30</span> Client language before you</span>
+      <div class="q-text">What words do your clients use when they describe their problem BEFORE working with you? What would they search, post, or DM?</div>
+      <div class="q-hint">This is different from your language — it's the raw, uncoached language the AI will hear in queries.</div>
+      <textarea id="q30" class="short" oninput="save()" placeholder="e.g. &quot;I'm exhausted all the time&quot;, &quot;I can't lose weight no matter what I do&quot;, &quot;my metabolism is broken&quot;, &quot;I have no willpower&quot;, &quot;hormones out of whack&quot;, &quot;nothing works for me&quot;"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q31</span> Terms you avoid</span>
+      <div class="q-text">What words or phrases from your niche do you actively avoid using? Competitor terms, rejected frameworks, language you oppose?</div>
+      <textarea id="q31" class="short" oninput="save()" placeholder="e.g. I never say 'clean eating' (moralistic), 'cheat meal' (guilt framing), 'willpower' (makes it personal not biological), 'detox' (pseudoscience overuse), 'calorie deficit' as the primary frame."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q32</span> Signature analogy</span>
+      <div class="q-text">What's your signature analogy or metaphor — the one you use constantly to explain your core concept?</div>
+      <textarea id="q32" class="short" oninput="save()" placeholder="e.g. The spark plug analogy — your mitochondria are the spark plugs. When they're not firing right, it doesn't matter how much fuel you put in. The car won't run."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q33</span> Rhetorical move</span>
+      <div class="q-text">What do you say right before you drop the key insight? Your rhetorical signature.</div>
+      <textarea id="q33" class="short" oninput="save()" placeholder="e.g. &quot;Here's what nobody in this industry will tell you...&quot; or &quot;The mainstream will say X. Here's what's actually happening.&quot;"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q34</span> Proper nouns</span>
+      <div class="q-text">Your program names, methodology names, framework names, and coined terms — listed so they're capitalized correctly throughout the vault.</div>
+      <div class="q-hint">Do not include client names. Client-identifying information is always anonymized.</div>
+      <textarea id="q34" class="short" oninput="save()" placeholder="e.g. Custom Metabolism Reset (CMR), The Fire Diet, The Big Five, Pro-Metabolic Framework, Thermometabolic Foods, Metabolism Reset Method"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 6: CONFIDENCE + CONFLICT + CORRECTIONS ─────────────────────────────── -->
+<div class="step-panel" id="step-6">
+  <div class="step-label">Step <span class="accent">07</span> of 10 — Elements 5, 6 &amp; 7</div>
+  <h1 class="step-title">Confidence, Conflict &amp; Corrections<span class="dot">.</span></h1>
+  <p class="step-desc">The three elements that make the AI reason about your positions rather than just repeat them — and prevent it from over-claiming, misrepresenting, or citing reversed teachings.</p>
+
+  <div class="q-group">
+    <div class="q-group-title">05 — Confidence<span class="dot">.</span></div>
+    <div class="q-group-desc">Every page in your vault is tagged with how certain you are. The AI modulates accordingly — "this is established" vs "this is something I hold against the mainstream."</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q35</span> What you'd stake your reputation on</span>
+      <div class="q-text">What do you teach as completely settled — the claims you'd stake your reputation on?</div>
+      <textarea id="q35" class="short" oninput="save()" placeholder="e.g. Seed oils (PUFAs) are metabolically damaging. Body temperature is a reliable readout of metabolic rate. Chronic caloric restriction suppresses thyroid function."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q36</span> What you're still refining</span>
+      <div class="q-text">What are you still refining or testing? Something you believe but know is still developing?</div>
+      <textarea id="q36" class="short" oninput="save()" placeholder="e.g. The exact role of red light therapy in mitochondrial repair — I'm confident it works, still figuring out optimal duration and timing for my client population."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q37</span> Your original synthesis</span>
+      <div class="q-text">What have you developed yourself — frameworks or protocols that are genuinely your original synthesis, not pulled from any one source?</div>
+      <textarea id="q37" class="short" oninput="save()" placeholder="e.g. The Body Temperature Protocol as a daily metabolic readout. The 90-day reverse dieting progression spreadsheet. The Holistic Life Web framework for cross-domain coaching."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q38</span> Beginner vs advanced</span>
+      <div class="q-text">What do you teach differently to beginners vs advanced clients? The AI needs to know so it doesn't give beginner advice to advanced clients.</div>
+      <textarea id="q38" class="short" oninput="save()" placeholder="e.g. Beginners get the simplified macro heuristic (1g protein per lb). Advanced clients get the full Randall cycle protocol with macro separation. Beginners get 'eat whole foods'; advanced clients get specific meal sequencing."></textarea>
+    </div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-group-title">06 — Conflict<span class="dot">.</span></div>
+    <div class="q-group-desc">Where you diverge from mainstream consensus — explicitly stored so the AI can reason about your positions, not just repeat them.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q39</span> What you argue against</span>
+      <div class="q-text">What mainstream advice in your niche do you actively argue against? The stuff you can't stand to hear other coaches say.</div>
+      <textarea id="q39" class="short" oninput="save()" placeholder="e.g. 'Just eat less and move more.' 'Calories are all that matter.' 'Intermittent fasting works for everyone.' 'Keto is the healthiest long-term diet.'"></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q40</span> Where you diverge most</span>
+      <div class="q-text">Where do you most explicitly diverge from the mainstream consensus? What would a credentialed mainstream expert say about your approach, and why are they wrong?</div>
+      <textarea id="q40" class="short" oninput="save()" placeholder="e.g. A mainstream RD would say I'm wrong to limit seed oils — they're 'heart healthy' per guidelines. I argue the linoleic acid oxidation mechanism is the primary driver of metabolic inflammation and the guidelines are funded by industry with conflicted interests."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q41</span> Concerning products or practices</span>
+      <div class="q-text">Are there specific platforms, programs, or practices widely respected in your niche that you have genuine concerns about?</div>
+      <textarea id="q41" class="short" oninput="save()" placeholder="e.g. GLP-1 agonists (Ozempic) prescribed without metabolic rehabilitation — I think it accelerates sarcopenic obesity. Many popular 30-day cleanses that are essentially starvation protocols relabeled."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q42</span> Claims needing careful framing</span>
+      <div class="q-text">Are there claims you make that require careful framing to avoid being misrepresented? Medical-adjacent claims, financial projections, or advice that could be taken out of context?</div>
+      <div class="q-hint">Critical for health, finance, and relationship coaches — AI responses without context can create liability.</div>
+      <textarea id="q42" class="short" oninput="save()" placeholder="e.g. When I discuss thyroid function, I always clarify I'm not practicing medicine. My hormone guidance is lifestyle protocol, not diagnosis or prescription. The AI must include this framing."></textarea>
+    </div>
+  </div>
+
+  <div class="q-group">
+    <div class="q-group-title">07 — Corrections<span class="dot">.</span></div>
+    <div class="q-group-desc">A dated registry of position shifts. When a client asks about something you've publicly reversed, the AI cites the current position — not the archived one.</div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q43</span> Public reversals</span>
+      <div class="q-text">What have you publicly changed your mind on, and approximately when?</div>
+      <textarea id="q43" class="tall" oninput="save()" placeholder="e.g.&#10;Carnivore diet (2020): taught it strongly 2018–2019, reversed publicly in 2020 after my own health collapsed.&#10;&#10;Intermittent fasting as default (2022): stopped recommending it universally after seeing thyroid suppression patterns in my female clients.&#10;&#10;Keto for weight loss (2021): taught low-carb aggressively 2017–2020, now I think 90% of the people who did keto with me came to me to recover from it."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q44</span> Framing shifts</span>
+      <div class="q-text">What have you been coaching on for years that you now frame completely differently? Not necessarily wrong — just better language or a cleaner model.</div>
+      <textarea id="q44" class="short" oninput="save()" placeholder="e.g. I used to call it 'fixing your metabolism.' Now I say 'metabolic healing' — because fixing implies it's broken, which triggers shame. The protocol is the same; the reframe changed compliance dramatically."></textarea>
+    </div>
+    <div class="question">
+      <span class="q-label"><span class="q-num">Q45</span> Concerning archive content</span>
+      <div class="q-text">Is there anything in your archive that contradicts your current teaching that you're worried about?</div>
+      <textarea id="q45" class="short" oninput="save()" placeholder="e.g. My early podcast episodes (2017–2019) are full of keto advocacy. I'm fine including them as historical, but they should be flagged — the AI should never cite them as current guidance."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ─── STEP 7: BUILD FOCUS ─────────────────────────────── -->
+<div class="step-panel" id="step-7">
+  <div class="step-label">Step <span class="accent">08</span> of 10 — Build Focus</div>
+  <h1 class="step-title">Priorities &amp; guardrails<span class="dot">.</span></h1>
+  <p class="step-desc">What matters most, what should never happen, and what the Brain should be able to do from day one.</p>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q46</span> Day-one capability</span>
+    <div class="q-text">What is the single most important question your Brain should be able to answer on day one?</div>
+    <div class="q-hint">Not what it should eventually do — what's the one response that, if it nailed it, would make you say "yes, that's me"?</div>
+    <textarea id="q46" class="short" oninput="save()" placeholder="e.g. &quot;My client just told me her basal temperature is 96.8°F consistently. What does that mean and what's my first move?&quot; If the Brain can answer that the way I would, it's working."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q47</span> Three distinguishing things</span>
+    <div class="q-text">What three things most distinguish your methodology from every other coach in your niche?</div>
+    <textarea id="q47" class="short" oninput="save()" placeholder="e.g. 1. I use body temperature as the primary metabolic diagnostic (not labs, not scale). 2. I address emotional eating at the identity layer, not the behavior layer. 3. I include business coaching in every metabolic package because financial stress is a cortisol driver."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q48</span> What the Brain must never say</span>
+    <div class="q-text">What should the Brain never say or recommend? Be explicit.</div>
+    <div class="q-hint">Think: outdated positions from your archive, dangerous medical advice without context, competitor methods, anything that would harm a client or embarrass you.</div>
+    <textarea id="q48" class="short" oninput="save()" placeholder="e.g. Never recommend caloric restriction as a primary intervention. Never cite my pre-2021 keto content as current guidance. Never recommend fasted training to a client in metabolic recovery. Never give medication-level thyroid guidance — always defer to functional medicine MD."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q49</span> Common misunderstanding</span>
+    <div class="q-text">What's the thing clients most commonly get wrong about your approach before they work with you? The Brain should actively correct this when it comes up.</div>
+    <textarea id="q49" class="short" oninput="save()" placeholder="e.g. They think my program is a diet. It's not. The first thing I do is get them eating MORE, not less. The misconception is that metabolic healing requires restriction. The Brain should immediately reframe this."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q50</span> Anchor transformation story</span>
+    <div class="q-text">What's the one client transformation story that best illustrates what your methodology actually does?</div>
+    <div class="q-hint">Full arc: where they started, what shifted, where they ended up. This becomes an anchor story throughout the Brain. Anonymize the client — describe only the transformation pattern.</div>
+    <textarea id="q50" class="tall" oninput="save()" placeholder="e.g. Female client, early 40s, had dieted for 20 years. Came to me eating 1,200 calories, training 6 days a week, gaining weight consistently. Basal temp was 96.4°F. I had her eat 2,400 calories of whole foods, cut training to 3 days, and walk daily. In 90 days her temp was 97.9°F, she'd lost 14 lbs without restriction, and her period came back after 2 years of amenorrhea. She went from &quot;my metabolism is broken&quot; to &quot;I was starving my metabolism.&quot;"></textarea>
+  </div>
+</div>
+
+<!-- ─── STEP 8: COMMITMENTS ─────────────────────────────── -->
+<div class="step-panel" id="step-8">
+  <div class="step-label">Step <span class="accent">09</span> of 10 — Commitments</div>
+  <h1 class="step-title">Your commitments<span class="dot">.</span></h1>
+  <p class="step-desc">The build timeline depends on your availability as much as mine. These aren't onerous — they're the logistics that determine whether we hit the timeline or miss it.</p>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q51</span> Clarifying email SLA</span>
+    <div class="q-text">During the build I'll send 3–5 clarifying questions that need your input before I can continue. What turnaround time can you commit to?</div>
+    <div class="radio-group" id="q51-radio">
+      <div class="radio-item" onclick="selectRadio('q51','24h')"><div class="radio-dot"></div><div class="radio-item-text"><strong>24 hours</strong> on business days.</div></div>
+      <div class="radio-item" onclick="selectRadio('q51','48h')"><div class="radio-dot"></div><div class="radio-item-text"><strong>48 hours</strong> on business days.</div></div>
+      <div class="radio-item" onclick="selectRadio('q51','week')"><div class="radio-dot"></div><div class="radio-item-text"><strong>5–7 business days.</strong> I check email weekly.</div></div>
+      <div class="radio-item" onclick="selectRadio('q51','other')"><div class="radio-dot"></div><div class="radio-item-text"><strong>Other</strong> — I'll explain in the text field below.</div></div>
+    </div>
+    <input type="hidden" id="q51">
+    <input type="text" id="q51-other" placeholder="Explain your response cadence if 'Other'" style="margin-top:8px;" oninput="save()">
+  </div>
+
+  <div class="flag warn"><div class="flag-icon">!</div><div><p><strong>The review pass is defined.</strong> You read 15–20 representative pages from the vault, flag anything factually wrong or that doesn't sound like you. Approval of the review pass = acceptance of the deliverable. It is not a line-by-line review of every page.</p></div></div>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q52</span> Review pass availability</span>
+    <div class="q-text">The review pass takes 2–3 hours on your end. How much lead time do you need to schedule that block once I notify you the vault is ready?</div>
+    <input type="text" id="q52" placeholder="e.g. 3 business days · I need to block it on my calendar in advance" oninput="save()">
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q53</span> Blackout dates</span>
+    <div class="q-text">Are there upcoming travel, launches, or blackout periods in the next 90 days where you'd be unavailable for more than 10 days?</div>
+    <input type="text" id="q53" placeholder="e.g. June 15 – July 5 traveling internationally, limited access" oninput="save()">
+  </div>
+
+  <hr style="border:0; border-top:1px solid var(--rule); margin: 40px 0;">
+
+  <h3 style="font-weight:900; font-size:20px; letter-spacing:-0.01em; margin-bottom: 16px;">File delivery instructions</h3>
+  <p style="font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.6;">Read this before sharing anything. Files shared incorrectly cause day-one delays.</p>
+
+  <div style="border:1px solid var(--rule); padding:24px; margin-bottom:24px; font-size:14px; line-height:1.7;">
+    <strong style="display:block; margin-bottom:12px; font-size:15px;">After the kickoff call — not before:</strong>
+    <ol style="padding-left:20px; margin:0; display:flex; flex-direction:column; gap:10px;">
+      <li><strong>Wait for a shared folder link from me.</strong> Do not share files before kickoff — they won't be organized correctly.</li>
+      <li><strong>Rename files descriptively.</strong> Format: <code style="background:var(--surface); padding:2px 5px; font-family:'JetBrains Mono',monospace; font-size:12px;">YYYY-MM-DD – [topic] – [context].mp4</code></li>
+      <li><strong>If you can't rename:</strong> sort into folders by year (Coaching Calls 2022, Coaching Calls 2023, etc.).</li>
+      <li><strong>Flag old-era content.</strong> Put it in a folder named <code style="background:var(--surface); padding:2px 5px; font-family:'JetBrains Mono',monospace; font-size:12px;">HISTORICAL – [date range]</code>.</li>
+      <li><strong>Set sharing permissions to "Anyone with the link can view AND download."</strong> View-only blocks processing.</li>
+      <li><strong>If content is locked inside a platform</strong> (Kajabi, Skool, Circle): tell me on the kickoff call. Do not screen-record hundreds of videos yourself.</li>
+    </ol>
+  </div>
+
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q54</span> Known file access issues</span>
+    <div class="q-text">After reading the above: do you foresee any specific issue with sharing your files?</div>
+    <div class="q-hint">Platform lock-in, lost recordings, files on old devices, password-protected folders — tell me now.</div>
+    <textarea id="q54" class="short" oninput="save()" placeholder="e.g. My 2021 Zoom recordings are locked in a company account I no longer have admin access to. My 2022–present calls are accessible on Google Drive. My Kajabi course videos will need to be exported somehow."></textarea>
+  </div>
+  <div class="question">
+    <span class="q-label"><span class="q-num">Q55</span> Anything else</span>
+    <div class="q-text">Is there anything about your methodology, archive, clients, or business situation that didn't fit anywhere above?</div>
+    <textarea id="q55" class="short" oninput="save()" placeholder="Open field. Drop whatever didn't fit. There's no such thing as too much context."></textarea>
+  </div>
+</div>
+
+<!-- ─── STEP 9: COMPLETE ─────────────────────────────── -->
+<div class="step-panel" id="step-9">
+  <div class="step-label">Complete</div>
+  <h1 class="step-title">Intake complete<span class="dot">.</span></h1>
+  <p class="step-desc">Download the three files below. Send the intake.md and intake.json to the email in your project agreement. The preflight prompt is for the builder to run before your kickoff call.</p>
+
+  <div class="downloads">
+    <div class="download-item">
+      <div class="download-meta">
+        <h4>Client Intake — Markdown</h4>
+        <p>Human-readable. Send this to Justin along with the JSON file.</p>
+      </div>
+      <button class="btn-download" onclick="downloadMarkdown()">↓ intake.md</button>
+    </div>
+    <div class="download-item">
+      <div class="download-meta">
+        <h4>Client Intake — JSON</h4>
+        <p>Machine-readable. Used by the build script to generate your vault structure.</p>
+      </div>
+      <button class="btn-download" onclick="downloadJSON()">↓ intake.json</button>
+    </div>
+    <div class="download-item">
+      <div class="download-meta">
+        <h4>Preflight Prompt</h4>
+        <p>Paste this into Claude Code to run the pre-build discovery and risk analysis.</p>
+      </div>
+      <button class="btn-download" onclick="downloadPreflight()">↓ preflight-prompt.txt</button>
+    </div>
+  </div>
+
+  <div class="next-steps">
+    <h3>What happens next<span style="color:var(--accent)">.</span></h3>
+    <div class="step-seq">
+      <div class="seq-item"><div class="seq-n">01</div><div class="seq-body"><h4>Send the files</h4><p>Email <code>intake.md</code> and <code>intake.json</code> to the address in your project agreement. I read the intake in full before we speak.</p></div></div>
+      <div class="seq-item"><div class="seq-n">02</div><div class="seq-body"><h4>Kickoff call (60 min)</h4><p>We review your archive together, address any flags from the legal section, and agree on the priority processing order. I'll ask follow-up questions on anything unclear.</p></div></div>
+      <div class="seq-item"><div class="seq-n">03</div><div class="seq-body"><h4>File sharing</h4><p>Within 24 hours of the kickoff call I'll send you a shared folder. You populate it following the file delivery instructions in Section 9 of this intake.</p></div></div>
+      <div class="seq-item"><div class="seq-n">04</div><div class="seq-body"><h4>Build phase (3–6 weeks from when files are shared)</h4><p>I process your archive. Expect 3–5 clarifying emails. Respond within your committed SLA or the timeline extends accordingly.</p></div></div>
+      <div class="seq-item"><div class="seq-n">05</div><div class="seq-body"><h4>Review pass</h4><p>I share the vault with you. You spot-check 15–20 pages. I correct anything wrong. Approval = acceptance.</p></div></div>
+      <div class="seq-item"><div class="seq-n">06</div><div class="seq-body"><h4>Delivery</h4><p>Your Brain is handed off as an Obsidian vault. Have Obsidian installed. I walk you through opening it.</p></div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <div class="nav-meta" id="nav-meta">Step 1 of 10</div>
+  <div class="nav-btns">
+    <button class="btn-back" id="btn-back" onclick="prevStep()" disabled>← Back</button>
+    <button class="btn-next" id="btn-next" onclick="nextStep()">Continue →</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────
+const TOTAL_STEPS = 10;
+let currentStep = 0;
+let formData = {};
+let prereqChecks = { 'pr-1': false, 'pr-2': false };
+let radios = {};
+let checks = {};
+
+const stepTitles = [
+  'Introduction', 'Who You Are', 'Archive', 'Legal & Consent',
+  'Distinctions & Evolution', 'Domains & Voice',
+  'Confidence, Conflict & Corrections', 'Build Focus',
+  'Commitments', 'Complete'
+];
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  buildStepNav();
+  loadProgress();
+  updateUI();
+});
+
+function buildStepNav() {
+  const nav = document.getElementById('step-nav');
+  stepTitles.forEach((t, i) => {
+    const pill = document.createElement('div');
+    pill.className = 'step-pill';
+    pill.id = `nav-pill-${i}`;
+    pill.innerHTML = `<span class="pill-num">${String(i+1).padStart(2,'0')}</span> ${t}`;
+    if (i < currentStep) pill.addEventListener('click', () => goToStep(i));
+    nav.appendChild(pill);
+  });
+}
+
+function updateStepNav() {
+  stepTitles.forEach((_, i) => {
+    const pill = document.getElementById(`nav-pill-${i}`);
+    if (!pill) return;
+    pill.className = 'step-pill' + (i === currentStep ? ' active' : '') + (i < currentStep ? ' done' : '');
+    pill.onclick = i < currentStep ? () => goToStep(i) : null;
+  });
+  const activePill = document.getElementById(`nav-pill-${currentStep}`);
+  if (activePill) activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+
+// ── NAVIGATION ──────────────────────────────────────
+function nextStep() {
+  if (currentStep === TOTAL_STEPS - 1) return;
+  const errs = validateStep(currentStep);
+  if (errs.length > 0) { showErrors(errs); return; }
+  goToStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 0) goToStep(currentStep - 1);
+}
+
+function goToStep(n) {
+  document.getElementById(`step-${currentStep}`).classList.remove('active');
+  currentStep = n;
+  document.getElementById(`step-${n}`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateUI();
+  if (n === TOTAL_STEPS - 1) prefillDownloadName();
+}
+
+function updateUI() {
+  document.getElementById('nav-meta').textContent = `Step ${currentStep + 1} of ${TOTAL_STEPS}`;
+  document.getElementById('btn-back').disabled = currentStep === 0;
+  const btnNext = document.getElementById('btn-next');
+  if (currentStep === TOTAL_STEPS - 1) {
+    btnNext.style.display = 'none';
+  } else if (currentStep === TOTAL_STEPS - 2) {
+    btnNext.textContent = 'Generate Downloads →';
+    btnNext.classList.add('final');
+    btnNext.style.display = '';
+  } else {
+    btnNext.textContent = 'Continue →';
+    btnNext.classList.remove('final');
+    btnNext.style.display = '';
+  }
+  const pct = (currentStep / (TOTAL_STEPS - 1)) * 100;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+  updateStepNav();
+}
+
+// ── VALIDATION ──────────────────────────────────────
+function validateStep(step) {
+  const errs = [];
+  if (step === 0) {
+    if (!prereqChecks['pr-1'] || !prereqChecks['pr-2']) errs.push('Please confirm both prerequisites above before continuing.');
+  }
+  if (step === 1) {
+    if (!val('q1')) errs.push('Please enter your name and brand name (Q1).');
+    if (!val('q2')) errs.push('Please enter your niche (Q2).');
+  }
+  if (step === 2) {
+    if (!val('q7')) errs.push('Please describe your archive (Q7).');
+    if (!val('q8')) errs.push('Please select your archive organization state (Q8).');
+  }
+  if (step === 3) {
+    if (!val('q15')) errs.push('Please answer the client consent question (Q15).');
+  }
+  if (step === 4) {
+    if (!val('q19')) errs.push('Please list at least one distinction pair (Q19).');
+  }
+  if (step === 5) {
+    if (!val('q24')) errs.push('Please list your domains (Q24).');
+    if (!val('q29')) errs.push('Please list your signature phrases (Q29).');
+  }
+  if (step === 6) {
+    if (!val('q35')) errs.push('Please answer the confidence question (Q35).');
+    if (!val('q39')) errs.push('Please answer the conflict question (Q39).');
+    if (!val('q43')) errs.push('Please describe at least one public reversal (Q43).');
+  }
+  if (step === 7) {
+    if (!val('q46')) errs.push('Please describe your day-one capability (Q46).');
+    if (!val('q48')) errs.push('Please specify what the Brain must never say (Q48).');
+  }
+  if (step === 8) {
+    if (!val('q51')) errs.push('Please commit to a clarifying email turnaround time (Q51).');
+  }
+  return errs;
+}
+
+function val(id) { return (formData[id] || '').trim().length > 0; }
+
+function showErrors(errs) {
+  // Flash button red briefly
+  const btn = document.getElementById('btn-next');
+  btn.style.background = 'var(--destructive)';
+  btn.style.borderColor = 'var(--destructive)';
+  btn.textContent = errs[0].substring(0, 48) + (errs[0].length > 48 ? '…' : '');
+  setTimeout(() => {
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.textContent = currentStep === TOTAL_STEPS - 2 ? 'Generate Downloads →' : 'Continue →';
+  }, 2800);
+}
+
+// ── INPUTS ──────────────────────────────────────
+function save() {
+  document.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+    if (el.id) formData[el.id] = el.value;
+  });
+  Object.assign(formData, radios, checks);
+  try { localStorage.setItem('brain-intake-v1', JSON.stringify({ formData, radios, checks, prereqChecks })); } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('brain-intake-v1') || '{}');
+    if (saved.formData) {
+      formData = saved.formData;
+      radios = saved.radios || {};
+      checks = saved.checks || {};
+      prereqChecks = saved.prereqChecks || {};
+      // Restore inputs
+      Object.entries(formData).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && el.tagName !== 'BUTTON') el.value = val || '';
+      });
+      // Restore prereqs
+      Object.entries(prereqChecks).forEach(([id, checked]) => {
+        if (checked) document.getElementById(`pc-${id.split('-')[1]}`).classList.add('checked');
+      });
+      // Restore radios
+      Object.entries(radios).forEach(([key, val]) => restoreRadio(key, val));
+      // Restore checks
+      Object.entries(checks).forEach(([key, val]) => {
+        if (val) {
+          const items = document.querySelectorAll('.check-item');
+          items.forEach(item => { if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${key}'`)) item.classList.add('checked'); });
+        }
+      });
+    }
+  } catch(e) {}
+}
+
+function togglePrereq(id) {
+  prereqChecks[id] = !prereqChecks[id];
+  document.getElementById(`pc-${id.split('-')[1]}`)[prereqChecks[id] ? 'classList' : 'classList'].toggle('checked', prereqChecks[id]);
+  save();
+}
+
+function selectRadio(groupId, value) {
+  radios[groupId] = value;
+  formData[groupId] = value;
+  const group = document.getElementById(`${groupId}-radio`);
+  if (!group) return;
+  group.querySelectorAll('.radio-item').forEach(item => item.classList.remove('selected'));
+  const items = group.querySelectorAll('.radio-item');
+  const idx = ['A','B','C','D','all','some','no','na','yes','unknown','24h','48h','week','other'].indexOf(value);
+  if (items[idx]) items[idx].classList.add('selected');
+  else {
+    items.forEach(item => {
+      if (item.getAttribute('onclick').includes(`'${value}'`)) item.classList.add('selected');
+    });
+  }
+  save();
+}
+
+function restoreRadio(groupId, value) {
+  const group = document.getElementById(`${groupId}-radio`);
+  if (!group) return;
+  group.querySelectorAll('.radio-item').forEach(item => {
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${value}'`)) item.classList.add('selected');
+  });
+}
+
+function toggleCheck(el, key) {
+  el.classList.toggle('checked');
+  checks[key] = el.classList.contains('checked');
+  save();
+}
+
+// ── GENERATE OUTPUTS ──────────────────────────────────────
+function getSlug() {
+  const name = (formData.q1 || 'client').split('·')[0].trim().toLowerCase();
+  return name.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'client';
+}
+
+function prefillDownloadName() {}
+
+function buildJSON() {
+  const d = formData;
+  return {
+    meta: {
+      generated: new Date().toISOString(),
+      version: '1.0',
+      form: 'brain-intake-v1',
+      slug: getSlug()
+    },
+    coach: {
+      name_and_brand: d.q1 || '', niche: d.q2 || '',
+      experience: d.q3 || '', delivery_format: d.q4 || '',
+      tech_stack: d.q5 || '', downstream_vision: d.q6 || ''
+    },
+    archive: {
+      inventory: d.q7 || '', organization: d.q8 || radios.q8 || '',
+      formats: { video: !!checks['q9-vid'], audio: !!checks['q9-aud'], transcripts_doc: !!checks['q9-trx'], transcripts_platform: !!checks['q9-plat'], transcript_service: d['q9-trx-service'] || '' },
+      avg_session_length: d.q10 || '', authorship: d.q11 || '',
+      old_era_content: d.q12 || '', crown_jewel: d.q13 || '',
+      exclusions: d.q14 || ''
+    },
+    legal: {
+      client_consent: d.q15 || radios.q15 || '',
+      gdpr_exposure: d.q16 || radios.q16 || '',
+      co_created_content: d.q17 || '',
+      ndas_third_party_ip: d.q18 || ''
+    },
+    seven_elements: {
+      distinctions: { pairs: d.q19 || '', non_obvious: d.q20 || '' },
+      evolution: { stopped_teaching: d.q21 || '', biggest_reversal: d.q22 || '', before_after_era: d.q23 || '' },
+      domains: { all_domains: d.q24 || '', percentages: d.q25 || '', cross_domain_example: d.q26 || '', missed_connection: d.q27 || '', private_domains: d.q28 || '' },
+      voice: { phrases: d.q29 || '', client_language_before: d.q30 || '', avoided_terms: d.q31 || '', signature_analogy: d.q32 || '', rhetorical_move: d.q33 || '', proper_nouns: d.q34 || '' },
+      confidence: { settled: d.q35 || '', refining: d.q36 || '', original_synthesis: d.q37 || '', beginner_vs_advanced: d.q38 || '' },
+      conflict: { argues_against: d.q39 || '', diverges_most: d.q40 || '', concerning_products: d.q41 || '', careful_framing: d.q42 || '' },
+      corrections: { public_reversals: d.q43 || '', framing_shifts: d.q44 || '', concerning_archive: d.q45 || '' }
+    },
+    build_focus: {
+      day_one_capability: d.q46 || '', three_differentiators: d.q47 || '',
+      never_say: d.q48 || '', common_misunderstanding: d.q49 || '',
+      anchor_story: d.q50 || ''
+    },
+    commitments: {
+      email_sla: d.q51 || radios.q51 || '', sla_other: d['q51-other'] || '',
+      review_pass_lead_time: d.q52 || '', blackout_dates: d.q53 || '',
+      known_file_issues: d.q54 || '', anything_else: d.q55 || ''
+    }
+  };
+}
+
+function buildMarkdown() {
+  const d = formData; const r = radios;
+  const slug = getSlug();
+  const now = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  return `# The Brain — Client Intake
+## ${d.q1 || 'Client'} · ${now}
+
+---
+
+## Section 1 — Who You Are
+
+**Q1 Name & Brand:** ${d.q1 || ''}
+**Q2 Niche:** ${d.q2 || ''}
+**Q3 Experience:** ${d.q3 || ''}
+**Q4 Delivery format:** ${d.q4 || ''}
+**Q5 Tech stack:**
+${d.q5 || ''}
+
+**Q6 Downstream vision:**
+${d.q6 || ''}
+
+---
+
+## Section 2 — Archive
+
+**Q7 Inventory:**
+${d.q7 || ''}
+
+**Q8 Organization state:** ${r.q8 || d.q8 || ''}
+**Q9 Formats:** Video: ${checks['q9-vid']?'✓':'–'} | Audio: ${checks['q9-aud']?'✓':'–'} | Transcripts (doc): ${checks['q9-trx']?'✓':'–'} | Transcripts (platform): ${checks['q9-plat']?'✓':'–'} | Service: ${d['q9-trx-service'] || '—'}
+**Q10 Avg session length:** ${d.q10 || ''}
+**Q11 Authorship:** ${d.q11 || ''}
+**Q12 Old-era content:** ${d.q12 || 'None noted'}
+**Q13 Crown jewel:** ${d.q13 || ''}
+**Q14 Exclusions:** ${d.q14 || 'None noted'}
+
+---
+
+## Section 3 — Legal & Consent
+
+**Q15 Client consent:** ${r.q15 || d.q15 || ''}
+**Q16 International clients (GDPR):** ${r.q16 || d.q16 || ''}
+**Q17 Co-created content:** ${d.q17 || ''}
+**Q18 NDAs & third-party IP:** ${d.q18 || ''}
+
+---
+
+## Section 4 — The Seven Elements
+
+### 01 — DISTINCTIONS
+**Q19 Distinction pairs:**
+${d.q19 || ''}
+
+**Q20 Non-obvious distinction:**
+${d.q20 || ''}
+
+### 02 — EVOLUTION
+**Q21 Stopped teaching:**
+${d.q21 || ''}
+
+**Q22 Biggest reversal:**
+${d.q22 || ''}
+
+**Q23 Before/after era:**
+${d.q23 || ''}
+
+### 03 — DOMAINS
+**Q24 All domains:** ${d.q24 || ''}
+**Q25 Domain percentages:** ${d.q25 || ''}
+**Q26 Cross-domain example:**
+${d.q26 || ''}
+
+**Q27 Missed connection:**
+${d.q27 || ''}
+
+**Q28 Private domains:** ${d.q28 || 'None'}
+
+### 04 — VOICE
+**Q29 Signature phrases:**
+${d.q29 || ''}
+
+**Q30 Client language before you:**
+${d.q30 || ''}
+
+**Q31 Avoided terms:** ${d.q31 || ''}
+**Q32 Signature analogy:**
+${d.q32 || ''}
+
+**Q33 Rhetorical move:** ${d.q33 || ''}
+**Q34 Proper nouns:** ${d.q34 || ''}
+
+### 05 — CONFIDENCE
+**Q35 Settled claims:**
+${d.q35 || ''}
+
+**Q36 Still refining:**
+${d.q36 || ''}
+
+**Q37 Original synthesis:**
+${d.q37 || ''}
+
+**Q38 Beginner vs advanced:**
+${d.q38 || ''}
+
+### 06 — CONFLICT
+**Q39 Argues against:**
+${d.q39 || ''}
+
+**Q40 Most explicit divergence:**
+${d.q40 || ''}
+
+**Q41 Concerning products/practices:**
+${d.q41 || ''}
+
+**Q42 Claims needing careful framing:**
+${d.q42 || ''}
+
+### 07 — CORRECTIONS
+**Q43 Public reversals:**
+${d.q43 || ''}
+
+**Q44 Framing shifts:**
+${d.q44 || ''}
+
+**Q45 Concerning archive content:**
+${d.q45 || ''}
+
+---
+
+## Section 5 — Build Focus & Guardrails
+
+**Q46 Day-one capability:**
+${d.q46 || ''}
+
+**Q47 Three differentiators:**
+${d.q47 || ''}
+
+**Q48 Must never say:**
+${d.q48 || ''}
+
+**Q49 Common misunderstanding:**
+${d.q49 || ''}
+
+**Q50 Anchor transformation story:**
+${d.q50 || ''}
+
+---
+
+## Section 6 — Commitments
+
+**Q51 Email SLA:** ${r.q51 || d.q51 || ''} ${d['q51-other'] ? '('+d['q51-other']+')' : ''}
+**Q52 Review pass lead time:** ${d.q52 || ''}
+**Q53 Blackout dates:** ${d.q53 || 'None'}
+**Q54 Known file access issues:**
+${d.q54 || 'None noted'}
+
+**Q55 Anything else:**
+${d.q55 || 'Nothing additional.'}
+`;
+}
+
+function buildPreflight() {
+  const d = formData; const r = radios;
+  const slug = getSlug();
+  const coachName = (d.q1 || 'Client').split('·')[0].trim();
+  const domains = (d.q24 || 'not specified').split(',').map(s => s.trim()).filter(Boolean);
+  const consentStatus = r.q15 || d.q15 || 'unknown';
+  const gdprStatus = r.q16 || d.q16 || 'unknown';
+
+  return `# PREFLIGHT — Brain Build for ${coachName}
+# Run this in Claude Code in the client-brain-build project directory
+
+You are running a preflight analysis for a new Brain build. Read the complete intake data below, then produce a structured PREFLIGHT.md document.
+
+## INTAKE DATA
+
+Coach: ${d.q1 || ''}
+Niche: ${d.q2 || ''}
+Experience: ${d.q3 || ''}
+Delivery: ${d.q4 || ''}
+Tech Stack: ${d.q5 || ''}
+Downstream Vision: ${d.q6 || ''}
+
+### Archive
+${d.q7 || ''}
+Organization: ${r.q8 || d.q8 || ''}
+Session length: ${d.q10 || ''}
+Authorship: ${d.q11 || ''}
+Old-era content: ${d.q12 || 'None noted'}
+Exclusions: ${d.q14 || 'None'}
+
+### Legal
+Consent status: ${consentStatus}
+GDPR exposure: ${gdprStatus}
+Co-created content: ${d.q17 || 'None noted'}
+IP/NDAs: ${d.q18 || 'None noted'}
+
+### The Seven Elements
+DISTINCTIONS: ${d.q19 || ''}
+EVOLUTION (reversals): ${d.q43 || ''} / Era shift: ${d.q23 || ''}
+DOMAINS: ${d.q24 || ''}
+VOICE (phrases): ${d.q29 || ''}
+VOICE (proper nouns): ${d.q34 || ''}
+VOICE (avoid): ${d.q31 || ''}
+CONFIDENCE (settled): ${d.q35 || ''}
+CONFLICT (argues against): ${d.q39 || ''}
+CORRECTIONS: ${d.q43 || ''}
+
+### Build Focus
+Day-one capability: ${d.q46 || ''}
+Never say: ${d.q48 || ''}
+Common misunderstanding: ${d.q49 || ''}
+
+### Commitments
+Email SLA: ${r.q51 || d.q51 || ''}
+Blackout dates: ${d.q53 || 'None'}
+Known file issues: ${d.q54 || 'None'}
+
+---
+
+## PREFLIGHT ANALYSIS REQUIRED
+
+Produce a PREFLIGHT.md with these exact sections:
+
+### 1. Archive Assessment
+- Estimated total processing time based on archive description
+- File access risks (platform lock-in, missing files, naming issues)
+- Transcription scope (raw video vs existing transcripts)
+- Old-era content handling recommendation
+
+### 2. Legal & Consent Flags
+Rate each flag: CRITICAL (blocks build) / SERIOUS (requires scoping) / MONITOR (note and proceed)
+- Client consent status: ${consentStatus}
+- GDPR exposure: ${gdprStatus}
+- Co-created content: ${d.q17 || 'none reported'}
+- Third-party IP: ${d.q18 || 'none reported'}
+For each CRITICAL or SERIOUS flag: state the specific action required before build starts.
+
+### 3. Vault Architecture Recommendation
+Based on their domains (${d.q24 || 'not specified'}), recommend:
+- Exact wiki/ subfolder list (use Justin Brain naming conventions)
+- Domain index files needed
+- Confidence taxonomy assignment (practical-by-default unless other)
+- View evolution tracking: ${(d.q12 || d.q23 || d.q22) ? 'YES — old-era content documented' : 'Assess based on intake'}
+- Canonical example pairs to add to CLAUDE.md (from their distinction pairs in Q19)
+
+### 4. Build Priority & Processing Order
+Which source files should be processed first? Rank:
+1. [Highest priority — covers most of the 7 elements]
+2. [Second priority]
+3. [Third priority]
+...
+Reasoning: based on crown jewel (Q13: ${d.q13 || 'not specified'}) and domain percentages (Q25: ${d.q25 || 'not specified'})
+
+### 5. Timeline Estimate
+Based on archive volume and organization state (${r.q8 || d.q8 || 'unknown'}):
+- Best case: X weeks
+- Likely: X weeks
+- Worst case (if access issues): X weeks
+- Risk factors that could extend timeline
+
+### 6. Open Questions
+List every question that MUST be answered before build starts. Format:
+- [Question] — needed because [reason] — severity: CRITICAL/SERIOUS
+
+### 7. Risk Register
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|-----------|
+[Build the table]
+
+### 8. CLAUDE.md Scaffold
+Write the complete CLAUDE.md for this client's vault. It must include:
+- All sections from the brain-build CLAUDE.md template
+- Canonical example pairs from Q19 (as wikilinks)
+- Voice rule: Preserve source voice verbatim
+- Anonymization rule: derived from their intake (Q14, Q15)
+- Confidence default: practical-by-default
+- View evolution: ${(d.q12 || d.q23) ? 'ENABLE — document the eras and years from Q12 and Q23' : 'assess'}
+- Domains from Q24
+- Proper nouns from Q34
+
+Output the complete CLAUDE.md text inside a code block.
+
+### 9. INGESTION-PROMPT.md Scaffold
+Write a complete INGESTION-PROMPT.md customized for this coach, including:
+- Their specific distinctions as "NEVER MERGE" rules
+- Their proper nouns for consistent capitalization
+- Their excluded content (Q14, Q18, Q28)
+- Their voice markers (Q29, Q31, Q33)
+- Their confidence taxonomy (practical-by-default)
+- Their anonymization rules
+
+Output the complete INGESTION-PROMPT.md inside a code block.
+
+Client slug for folder: ${slug}
+Target folder: clients/${slug}/
+`;
+}
+
+function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain; charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadMarkdown() { downloadFile(`${getSlug()}-intake.md`, buildMarkdown()); }
+function downloadJSON() { downloadFile(`${getSlug()}-intake.json`, JSON.stringify(buildJSON(), null, 2)); }
+function downloadPreflight() { downloadFile(`${getSlug()}-preflight-prompt.txt`, buildPreflight()); }
+</script>
+</body>
+</html>
