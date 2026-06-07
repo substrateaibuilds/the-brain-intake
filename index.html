@@ -829,7 +829,9 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 <div class="step-panel" id="step-9">
   <div class="step-label">Complete</div>
   <h1 class="step-title">Intake complete<span class="dot">.</span></h1>
-  <p class="step-desc">Download the three files below. Send the intake.md and intake.json to the email in your project agreement. The preflight prompt is for the builder to run before your kickoff call.</p>
+  <p class="step-desc">Your answers have been submitted. Justin will receive them and reach out within 24 hours to schedule your kickoff call. Downloads below are your copies for reference.</p>
+
+  <div id="submit-status" style="display:none;padding:16px 20px;border:1px solid var(--rule);margin:0 0 32px;font-size:14px;line-height:1.5;font-family:'Inter',sans-serif;"></div>
 
   <div class="downloads">
     <div class="download-item">
@@ -943,7 +945,33 @@ function goToStep(n) {
   document.getElementById(`step-${n}`).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   updateUI();
-  if (n === TOTAL_STEPS - 1) prefillDownloadName();
+  if (n === TOTAL_STEPS - 1) { prefillDownloadName(); submitIntake(); }
+}
+
+async function submitIntake() {
+  const el = document.getElementById('submit-status');
+  el.style.display = 'block';
+  el.style.borderColor = 'var(--rule)';
+  el.style.color = 'var(--muted)';
+  el.textContent = 'Submitting your intake…';
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildJSON()),
+    });
+    if (res.ok) {
+      el.style.borderColor = 'var(--accent)';
+      el.style.color = 'var(--ink)';
+      el.textContent = '✓ Submitted. Justin will be in touch within 24 hours to schedule your kickoff call.';
+    } else {
+      throw new Error('server');
+    }
+  } catch {
+    el.style.borderColor = '#D97F7F';
+    el.style.color = 'var(--ink)';
+    el.innerHTML = 'Submission failed. Please download your <strong>intake.json</strong> below and email it to <a href="mailto:justin@iamclovis.com" style="color:var(--accent)">justin@iamclovis.com</a>.';
+  }
 }
 
 function updateUI() {
