@@ -6,17 +6,27 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  let intake;
   try {
-    const intake = req.body;
-    const coachName = ((intake.coach?.name_and_brand || 'Unknown Coach').split('·')[0]).trim();
-    const slug = intake.meta?.slug || 'client';
-    const niche = intake.coach?.niche || '—';
-    const vision = intake.coach?.downstream_vision || '—';
-    const archive = intake.archive?.inventory || '—';
-    const consent = intake.legal?.client_consent || '—';
-    const gdpr = intake.legal?.gdpr_exposure || '—';
-    const sla = intake.commitments?.email_sla || '—';
-    const fileIssues = intake.commitments?.known_file_issues || 'None noted';
+    intake = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    if (!intake || typeof intake !== 'object') throw new Error('empty');
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+
+  // Escape all user-supplied values before HTML interpolation
+  const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  try {
+    const coachName = esc(((intake.coach?.name_and_brand || 'Unknown Coach').split('·')[0]).trim());
+    const slug = esc(intake.meta?.slug || 'client');
+    const niche = esc(intake.coach?.niche || '—');
+    const vision = esc(intake.coach?.downstream_vision || '—');
+    const archive = esc(intake.archive?.inventory || '—');
+    const consent = esc(intake.legal?.client_consent || '—');
+    const gdpr = esc(intake.legal?.gdpr_exposure || '—');
+    const sla = esc(intake.commitments?.email_sla || '—');
+    const fileIssues = esc(intake.commitments?.known_file_issues || 'None noted');
     const submitted = new Date().toUTCString();
 
     const html = `
@@ -43,8 +53,8 @@ module.exports = async function handler(req, res) {
     const jsonContent = Buffer.from(JSON.stringify(intake, null, 2)).toString('base64');
 
     const payload = {
-      personalizations: [{ to: [{ email: 'justin@iamclovis.com' }] }],
-      from: { email: 'intake@naultsystems.com', name: 'Brain Intake' },
+      personalizations: [{ to: [{ email: 'justin@naultsystems.com' }] }],
+      from: { email: 'justin@naultsystems.com', name: 'Brain Intake' },
       subject: `New Brain intake — ${coachName}`,
       content: [{ type: 'text/html', value: html }],
       attachments: [
@@ -72,7 +82,7 @@ module.exports = async function handler(req, res) {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      console.error('Resend error:', err);
+      console.error('SendGrid error:', err);
       return res.status(500).json({ error: 'Email delivery failed', detail: err });
     }
 
