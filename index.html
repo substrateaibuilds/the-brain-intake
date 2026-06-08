@@ -829,33 +829,9 @@ select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns
 <div class="step-panel" id="step-9">
   <div class="step-label">Complete</div>
   <h1 class="step-title">Intake complete<span class="dot">.</span></h1>
-  <p class="step-desc">Your answers have been submitted. Justin will receive them and reach out within 24 hours to schedule your kickoff call. Downloads below are your copies for reference.</p>
+  <p class="step-desc">Your answers have been submitted. Justin will be in touch within 24 hours to schedule your kickoff call.</p>
 
   <div id="submit-status" style="display:none;padding:16px 20px;border:1px solid var(--rule);margin:0 0 32px;font-size:14px;line-height:1.5;font-family:'Inter',sans-serif;"></div>
-
-  <div class="downloads">
-    <div class="download-item">
-      <div class="download-meta">
-        <h4>Client Intake — Markdown</h4>
-        <p>Human-readable. Send this to Justin along with the JSON file.</p>
-      </div>
-      <button class="btn-download" onclick="downloadMarkdown()">↓ intake.md</button>
-    </div>
-    <div class="download-item">
-      <div class="download-meta">
-        <h4>Client Intake — JSON</h4>
-        <p>Machine-readable. Used by the build script to generate your vault structure.</p>
-      </div>
-      <button class="btn-download" onclick="downloadJSON()">↓ intake.json</button>
-    </div>
-    <div class="download-item">
-      <div class="download-meta">
-        <h4>Preflight Prompt</h4>
-        <p>Paste this into Claude Code to run the pre-build discovery and risk analysis.</p>
-      </div>
-      <button class="btn-download" onclick="downloadPreflight()">↓ preflight-prompt.txt</button>
-    </div>
-  </div>
 
   <div class="next-steps">
     <h3>What happens next<span style="color:var(--accent)">.</span></h3>
